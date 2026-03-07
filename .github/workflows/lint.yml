@@ -1,8 +1,6 @@
 name: Lint
 
 on:
-  push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -25,7 +23,7 @@ jobs:
           version: latest
 
   format:
-    run-on: ubuntu-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
