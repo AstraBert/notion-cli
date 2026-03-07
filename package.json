@@ -1,7 +1,7 @@
 {
   "name": "@cle-does-things/notion-cli",
   "version": "0.1.0",
-  "description": "CLI to quickly create and read notion pages from the terminal.",
+  "description": "CLI to quickly create and read Notion pages from the terminal.",
   "main": "index.js",
   "scripts": {
     "postinstall": "golang-npm install",
