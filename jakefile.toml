@@ -1,0 +1,13 @@
+format="gofmt -l ./**/*.go"
+lint="golangci-lint run -v"
+test={command="go test -v ./...", depends_on=["install-deps"]}
+install-deps="go get -v ./..."
+make-bin="mkdir -p bin/"
+clear-bin="rm -rf bin/"
+build-darwin-amd64="GOARCH=amd64 GOOS=darwin go build -o bin/notion-cli-darwin-amd64 ."
+build-darwin-arm64="GOARCH=arm64 GOOS=darwin go build -o bin/notion-cli-darwin-arm64 ."
+build-windows-amd64="GOARCH=amd64 GOOS=windows go build -o bin/notion-cli-windows-amd64.exe ."
+build-windows-arm64="GOARCH=arm64 GOOS=windows go build -o bin/notion-cli-windows-amd64.exe ."
+build-linux-amd64="GOARCH=amd64 GOOS=linux go build -o bin/notion-cli-linux-amd64 ."
+build-linux-arm64="GOARCH=arm64 GOOS=linux go build -o bin/notion-cli-linux-arm64 ."
+build-and-clean={command="true", depends_on=["install-deps", "make-bin", "build-darwin-amd64", "build-darwin-arm64", "build-windows-amd64", "build-windows-arm64", "build-linux-amd64", "build-linux-arm64", "clear-bin"]}

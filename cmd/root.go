@@ -13,7 +13,7 @@ var rootCmd = &cobra.Command{
 	Short: "notion-cli is a CLI tool to read and write Notion pages.",
 	Long:  "notion-cli is a CLI tool that reads and writes Notion pages connecting to the Notion API.",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		_ = cmd.Help()
 	},
 }
 
@@ -97,8 +97,8 @@ func init() {
 	writeCmd.Flags().StringVarP(&writeContent, "content", "c", "", "Markdown content to write. Required.")
 	writeCmd.Flags().StringVarP(&title, "title", "t", "", "Title for the page. Defaults to an empty string.")
 
-	writeCmd.MarkFlagRequired("parent-id")
-	writeCmd.MarkFlagRequired("content")
+	_ = writeCmd.MarkFlagRequired("parent-id")
+	_ = writeCmd.MarkFlagRequired("content")
 
 	rootCmd.AddCommand(readCmd)
 	rootCmd.AddCommand(writeCmd)

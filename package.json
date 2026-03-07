@@ -1,0 +1,33 @@
+{
+  "name": "@cle-does-things/notion-cli",
+  "version": "0.1.0",
+  "description": "CLI to quickly create and read notion pages from the terminal.",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "golang-npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AstraBert/notion-cli.git"
+  },
+  "keywords": [
+    "cli",
+    "notion",
+    "markdown"
+  ],
+  "author": "Clelia Astra Bertelli",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AstraBert/notion-cli/issues"
+  },
+  "homepage": "https://github.com/AstraBert/notion-cli#readme",
+  "dependencies": {
+    "golang-npm": "^0.0.6"
+  },
+  "goBinary": {
+    "name": "notion-cli",
+    "path": "./bin",
+    "url": "https://github.com/AstraBert/notion-cli/releases/download/v{{version}}/notion-cli_{{version}}_{{platform}}_{{arch}}.tar.gz"
+  }
+}

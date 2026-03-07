@@ -38,7 +38,7 @@ func NewNotionClient(apiKey string, notionVersion string) *NotionClient {
 
 func NewNotionClientFromDefaults() (*NotionClient, error) {
 	apiKey, ok := os.LookupEnv("NOTION_API_KEY")
-	if !ok {
+	if !ok || apiKey == "" {
 		return nil, errors.New("could not find NOTION_API_KEY within the current environment")
 	}
 	return &NotionClient{
@@ -62,15 +62,15 @@ func (n *NotionClient) GetPage(pageId string) (string, error) {
 		return "", err
 	}
 	if res.StatusCode > 299 || res.StatusCode < 200 {
-		defer res.Body.Close()
+		defer func() { _ = res.Body.Close() }()
 		body, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", err
 		}
 		detail := string(body)
-		return "", fmt.Errorf("Response returned a status code of %d: %s", res.StatusCode, detail)
+		return "", fmt.Errorf("response returned a status code of %d: %s", res.StatusCode, detail)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
@@ -127,15 +127,15 @@ func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentT
 		return "", err
 	}
 	if res.StatusCode > 299 || res.StatusCode < 200 {
-		defer res.Body.Close()
+		defer func() { _ = res.Body.Close() }()
 		respBody, err := io.ReadAll(res.Body)
 		if err != nil {
 			return "", err
 		}
 		detail := string(respBody)
-		return "", fmt.Errorf("Response returned a status code of %d: %s", res.StatusCode, detail)
+		return "", fmt.Errorf("response returned a status code of %d: %s", res.StatusCode, detail)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	respBody, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
