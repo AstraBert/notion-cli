@@ -2,6 +2,9 @@ package internals
 
 import "time"
 
+var _ ParentType = (*PageParent)(nil)     // satisfies interface
+var _ ParentType = (*DatabaseParent)(nil) // satisfies interface
+
 type PageMarkdown struct {
 	Object          string   `json:"object"`
 	ID              string   `json:"id"`
@@ -11,14 +14,55 @@ type PageMarkdown struct {
 }
 
 type PostMarkdown struct {
-	Markdown string `json:"markdown"`
+	Markdown   string         `json:"markdown"`
+	Parent     ParentType     `json:"parent"`
+	Properties PageProperties `json:"properties"`
+}
+
+type ParentType interface {
+	GetId() string
+}
+
+type PageParent struct {
+	Type   string `json:"type"`
+	PageId string `json:"page_id"`
+}
+
+func (p *PageParent) GetId() string {
+	return p.PageId
+}
+
+type DatabaseParent struct {
+	Type       string `json:"type"`
+	DatabaseId string `json:"database_id"`
+}
+
+func (d *DatabaseParent) GetId() string {
+	return d.DatabaseId
+}
+
+type PageProperties struct {
+	Title TitleProperty `json:"title"`
+}
+
+type TitleProperty struct {
+	Title []RichTextItem `json:"title"`
+}
+
+type RichTextItem struct {
+	Type string       `json:"type"`
+	Text RichTextBody `json:"text"`
+}
+
+type RichTextBody struct {
+	Content string `json:"content"`
 }
 
 type PostPage struct {
 	Object         string         `json:"object"`
 	ID             string         `json:"id"`
-	CreatedTime    time.Time      `json:"created_time,omitempty"`
-	LastEditedTime time.Time      `json:"last_edited_time,omitempty"`
+	CreatedTime    time.Time      `json:"created_time"`
+	LastEditedTime time.Time      `json:"last_edited_time"`
 	Archived       bool           `json:"archived,omitempty"`
 	InTrash        bool           `json:"in_trash,omitempty"`
 	IsLocked       bool           `json:"is_locked,omitempty"`
@@ -28,8 +72,8 @@ type PostPage struct {
 	Properties     map[string]any `json:"properties,omitempty"`
 	Icon           map[string]any `json:"icon,omitempty"`
 	Cover          map[string]any `json:"cover,omitempty"`
-	CreatedBy      User           `json:"created_by,omitempty"`
-	LastEditedBy   User           `json:"last_edited_by,omitempty"`
+	CreatedBy      User           `json:"created_by"`
+	LastEditedBy   User           `json:"last_edited_by"`
 }
 
 type User struct {

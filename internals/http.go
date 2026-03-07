@@ -11,13 +11,17 @@ import (
 	"time"
 )
 
+type ParentLiteral string
+
+const DatabaseParentLiteral ParentLiteral = "database"
+const PageParentLiteral ParentLiteral = "page"
 const DefaultNotionVersion string = "2025-09-03"
 
 var _ NotionHttpClient = (*NotionClient)(nil) // satisfies interface
 
 type NotionHttpClient interface {
 	GetPage(string) (string, error)
-	PostPage(string) (string, error)
+	PostPage(string, string, string, ParentLiteral) (string, error)
 }
 
 type NotionClient struct {
@@ -51,9 +55,9 @@ func (n *NotionClient) GetPage(pageId string) (string, error) {
 		return "", err
 	}
 	req.Header.Add("Notion-Version", n.notionVersion)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer: %s", n.apiKey))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiKey))
 
-	res, err := client.Do(req)
+	res, err := RequestWithRetries(client, req)
 	if err != nil {
 		return "", err
 	}
@@ -79,10 +83,32 @@ func (n *NotionClient) GetPage(pageId string) (string, error) {
 	return page.Markdown, nil
 }
 
-func (n *NotionClient) PostPage(markdownContent string) (string, error) {
+func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentType ParentLiteral) (string, error) {
 	client := &http.Client{Timeout: time.Duration(60) * time.Second}
 	url := "https://api.notion.com/v1/pages"
-	reqBodyJson := PostMarkdown{Markdown: markdownContent}
+	var parent ParentType
+	switch parentType {
+	case DatabaseParentLiteral:
+		parent = &DatabaseParent{Type: "database_id", DatabaseId: parentId}
+	case PageParentLiteral:
+		parent = &PageParent{Type: "page_id", PageId: parentId}
+	}
+	reqBodyJson := PostMarkdown{
+		Markdown: markdownContent,
+		Parent:   parent,
+		Properties: PageProperties{
+			Title: TitleProperty{
+				Title: []RichTextItem{
+					{
+						Type: "text",
+						Text: RichTextBody{
+							Content: title,
+						},
+					},
+				},
+			},
+		},
+	}
 	bodyData, err := json.Marshal(reqBodyJson)
 	if err != nil {
 		return "", err
@@ -93,10 +119,10 @@ func (n *NotionClient) PostPage(markdownContent string) (string, error) {
 		return "", err
 	}
 	req.Header.Add("Notion-Version", n.notionVersion)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer: %s", n.apiKey))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiKey))
 	req.Header.Add("Content-Type", "application/json")
 
-	res, err := client.Do(req)
+	res, err := RequestWithRetries(client, req)
 	if err != nil {
 		return "", err
 	}
@@ -136,6 +162,6 @@ func (app *Notion) Read(pageId string) (string, error) {
 	return app.client.GetPage(pageId)
 }
 
-func (app *Notion) Write(content string) (string, error) {
-	return app.client.PostPage(content)
+func (app *Notion) Write(content, title, parentId string, parentType ParentLiteral) (string, error) {
+	return app.client.PostPage(content, title, parentId, parentType)
 }
