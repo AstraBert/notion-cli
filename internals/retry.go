@@ -25,21 +25,21 @@ func RequestWithRetries(client *http.Client, request *http.Request) (*http.Respo
 			return response, nil
 		}
 		retryAfter := response.Header.Get(RetryAfterHeader)
-		var retryAfterSeconds time.Duration
+		var retryAfterTime time.Duration
 		seconds, err := strconv.Atoi(retryAfter)
 		switch err {
 		case nil:
-			retryAfterSeconds = time.Duration(seconds) * time.Second
+			retryAfterTime = time.Duration(seconds) * time.Second
 		default:
 			dt, errDt := time.Parse(time.RFC1123, retryAfter)
 			if errDt != nil {
-				retryAfterSeconds = time.Duration(1) * time.Second
+				retryAfterTime = time.Duration(1) * time.Second
 			} else {
-				retryAfterSeconds = time.Until(dt)
+				retryAfterTime = time.Until(dt)
 			}
 		}
-		log.Printf("Will retry after sleeping for %d seconds...\n", retryAfterSeconds/time.Second)
-		time.Sleep(retryAfterSeconds)
+		log.Printf("Will retry after sleeping for %d seconds...\n", retryAfterTime/time.Second)
+		time.Sleep(retryAfterTime)
 	}
-	return nil, fmt.Errorf("Exceeded maximum number of retries: %d", MaxRetries)
+	return nil, fmt.Errorf("exceeded maximum number of retries: %d", MaxRetries)
 }

@@ -1,3 +1,4 @@
 .env
-# binary
+# binaries
 notion-cli
+bin/

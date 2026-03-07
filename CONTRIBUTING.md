@@ -27,14 +27,26 @@ Thank you for your interest in contributing to this project! Please review these
 
 ### How to Contribute
 
+> This project uses [jake](https://github.com/AstraBert/jake) as a task executor
+
 1. **Fork the repository and check out a secondary branch**
 
 2. **Make your changes and test**
+
+  ```bash
+  jake test
+  jake build-and-clean
+  ```
 
    Ensure the build succeeds and all tests pass. Add tests for new features.
 
 4. **Verify formatting and linting compliance**
    Ensure your changes pass all linting checks.
+
+  ```bash
+  jake format
+  jake lint
+  ```
 
 5. **Commit your changes**
 
