@@ -52,6 +52,13 @@ notion-cli read <page-id>
 |----------|-------------|----------|
 | `page-id` | The ID of the Notion page to read | Yes |
 
+**Flags**
+
+| Flag | Alias | Description | Required | Default |
+|------|-------|-------------|----------|---------|
+| `--max-retries` | `-m` | Maximum number of retries for failed API calls | No | `3` |
+| `--retry-interval` | `-r` | Retry interval (in seconds) for failed API calls | No | `1` |
+
 **Examples**
 
 ```bash
@@ -82,6 +89,8 @@ notion-cli write --parent-id <id> --content <markdown> [--parent-type <type>] [-
 | `--content` | `-c` | Markdown content for the page body | Yes | — |
 | `--parent-type` | `-p` | Type of the parent: `page` or `database` | No | `page` |
 | `--title` | `-t` | Title for the new page | No | `""` |
+| `--max-retries` | `-m` | Maximum number of retries for failed API calls | No | `3` |
+| `--retry-interval` | `-r` | Retry interval (in seconds) for failed API calls | No | `1` |
 
 **Examples**
 
@@ -99,6 +108,37 @@ notion-cli write --parent-id abb4215a-8f8f-47fb-81e5-353a0aec683f \
 
 # Using short flags
 notion-cli write -i abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world" -t "My Page"
+```
+
+### `append` 
+
+**Aliases:** `w`
+
+Appends markdown content to the end of an existing Notion page and prints the ID of the modified page to stdout.
+
+**Arguments**
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `page-id` | The ID of the Notion page to modify | Yes |
+
+**Flags**
+
+| Flag | Alias | Description | Required | Default |
+|------|-------|-------------|----------|---------|
+| `--content` | `-c` | Markdown content for the page body | Yes | — |
+| `--max-retries` | `-m` | Maximum number of retries for failed API calls | No | `3` |
+| `--retry-interval` | `-r` | Retry interval (in seconds) for failed API calls | No | `1` |
+
+**Examples**
+
+```bash
+# Append content to a page
+notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f \
+  --content "# Hello\nThis is a new block."
+
+# Using short flags
+notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world"
 ```
 
 ## Contributing

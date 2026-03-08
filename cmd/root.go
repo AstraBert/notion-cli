@@ -24,21 +24,27 @@ func Execute() {
 	}
 }
 
+var maxRetries int
+var retryTime int
+
 var readCmd = &cobra.Command{
 	Use:     "read",
 	Aliases: []string{"r"},
 	Short:   "Get a Notion Page providing its ID.",
 	Long:    "Get the content of a Notion Page by providing its ID.",
-	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		pageId := args[0]
+		if pageId == "" {
+			fmt.Println("\x1b[1;31mYou must provide a positional argument for `page_id`")
+			os.Exit(1)
+		}
 		notionClient, err := internals.NewNotionClientFromDefaults()
 		if err != nil {
 			fmt.Printf("\x1b[1;31mAn error occurred while initializing the Notion client: %s\n", err.Error())
 			os.Exit(1)
 		}
 		app := internals.NewNotion(notionClient)
-		content, err := app.Read(pageId)
+		content, err := app.Read(pageId, maxRetries, retryTime)
 		if err != nil {
 			fmt.Printf("\x1b[1;31mAn error occurred while reading the Notion page: %s\n", err.Error())
 			os.Exit(2)
@@ -52,6 +58,8 @@ var parentType string
 var writeContent string
 var parentId string
 var title string
+var writeMaxRetries int
+var writeRetryTime int
 
 var writeCmd = &cobra.Command{
 	Use:     "write",
@@ -82,7 +90,7 @@ var writeCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		app := internals.NewNotion(notionClient)
-		pageId, err := app.Write(writeContent, title, parentId, parentLiteral)
+		pageId, err := app.Write(writeContent, title, parentId, parentLiteral, writeMaxRetries, writeRetryTime)
 		if err != nil {
 			fmt.Printf("\x1b[1;31mAn error occurred while writing the Notion page: %s\n", err.Error())
 			os.Exit(2)
@@ -91,15 +99,59 @@ var writeCmd = &cobra.Command{
 	},
 }
 
+var appendContent string
+var appendMaxRetries int
+var appendRetryTime int
+
+var appendCmd = &cobra.Command{
+	Use:     "append",
+	Aliases: []string{"a"},
+	Short:   "Append markdown content at the end of a Notion page.",
+	Long:    "Append markdown content at the end of a Notion page, by providing the page ID and the content. Returns the ID of the modified page.",
+	Run: func(cmd *cobra.Command, args []string) {
+		pageId := args[0]
+		if pageId == "" {
+			fmt.Println("\x1b[1;31mYou must provide a positional argument for `page_id`")
+			os.Exit(1)
+		}
+		if appendContent == "" {
+			fmt.Println("\x1b[1;31mYou must provide an argument for `--content`/`-c`")
+			os.Exit(1)
+		}
+		notionClient, err := internals.NewNotionClientFromDefaults()
+		if err != nil {
+			fmt.Printf("\x1b[1;31mAn error occurred while initializing the Notion client: %s\n", err.Error())
+			os.Exit(1)
+		}
+		app := internals.NewNotion(notionClient)
+		returnedId, err := app.Append(pageId, appendContent, appendMaxRetries, appendRetryTime)
+		if err != nil {
+			fmt.Printf("\x1b[1;31mAn error occurred while appending content to the Notion page: %s\n", err.Error())
+			os.Exit(2)
+		}
+		fmt.Println(returnedId)
+		os.Exit(0)
+	},
+}
+
 func init() {
 	writeCmd.Flags().StringVarP(&parentType, "parent-type", "p", "page", "Type of parent ('database' or 'page'). Defaults to 'page'.")
 	writeCmd.Flags().StringVarP(&parentId, "parent-id", "i", "", "ID of the parent element. Required.")
 	writeCmd.Flags().StringVarP(&writeContent, "content", "c", "", "Markdown content to write. Required.")
 	writeCmd.Flags().StringVarP(&title, "title", "t", "", "Title for the page. Defaults to an empty string.")
+	writeCmd.Flags().IntVarP(&writeMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
+	writeCmd.Flags().IntVarP(&writeRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
+	readCmd.Flags().IntVarP(&maxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
+	readCmd.Flags().IntVarP(&retryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
+	appendCmd.Flags().StringVarP(&appendContent, "content", "c", "", "Markdown content to append. Required.")
+	appendCmd.Flags().IntVarP(&appendMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
+	appendCmd.Flags().IntVarP(&appendRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
 
 	_ = writeCmd.MarkFlagRequired("parent-id")
 	_ = writeCmd.MarkFlagRequired("content")
+	_ = appendCmd.MarkFlagRequired("content")
 
 	rootCmd.AddCommand(readCmd)
 	rootCmd.AddCommand(writeCmd)
+	rootCmd.AddCommand(appendCmd)
 }

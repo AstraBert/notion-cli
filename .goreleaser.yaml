@@ -7,3 +7,18 @@ builds:
     goarch:
       - amd64
       - arm64
+
+homebrew_casks:
+  - name: notion-cli
+    repository:
+      owner: AstraBert
+      name: homebrew-notion-cli
+      branch: main
+    binaries:
+      - notion-cli
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/notion-cli"]
+          end
