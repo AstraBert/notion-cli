@@ -14,6 +14,7 @@ homebrew_casks:
       owner: AstraBert
       name: homebrew-notion-cli
       branch: main
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     binaries:
       - notion-cli
     hooks:
