@@ -80,3 +80,20 @@ type User struct {
 	ID     string `json:"id,omitempty"`
 	Object string `json:"object,omitempty"`
 }
+
+type PatchMarkdown struct {
+	Type          string        `json:"type"`
+	InsertContent InsertContent `json:"insert_content"`
+}
+
+type InsertContent struct {
+	Content string `json:"content"`
+}
+
+type PatchedPage struct {
+	Object          string   `json:"object"`
+	ID              string   `json:"id"`
+	Markdown        string   `json:"markdown"`
+	Truncated       bool     `json:"truncated"`
+	UnknownBlockIDs []string `json:"unknown_block_ids"`
+}

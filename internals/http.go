@@ -20,8 +20,9 @@ const DefaultNotionVersion string = "2025-09-03"
 var _ NotionHttpClient = (*NotionClient)(nil) // satisfies interface
 
 type NotionHttpClient interface {
-	GetPage(string) (string, error)
-	PostPage(string, string, string, ParentLiteral) (string, error)
+	GetPage(string, int, int) (string, error)
+	PostPage(string, string, string, ParentLiteral, int, int) (string, error)
+	PatchPage(string, string, int, int) (string, error)
 }
 
 type NotionClient struct {
@@ -47,7 +48,7 @@ func NewNotionClientFromDefaults() (*NotionClient, error) {
 	}, nil
 }
 
-func (n *NotionClient) GetPage(pageId string) (string, error) {
+func (n *NotionClient) GetPage(pageId string, maxRetries, retryInterval int) (string, error) {
 	client := &http.Client{Timeout: time.Duration(60) * time.Second}
 	url := fmt.Sprintf("https://api.notion.com/v1/pages/%s/markdown", pageId)
 	req, err := http.NewRequest("GET", url, nil)
@@ -57,7 +58,7 @@ func (n *NotionClient) GetPage(pageId string) (string, error) {
 	req.Header.Add("Notion-Version", n.notionVersion)
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiKey))
 
-	res, err := RequestWithRetries(client, req)
+	res, err := RequestWithRetries(client, req, maxRetries, retryInterval)
 	if err != nil {
 		return "", err
 	}
@@ -83,7 +84,7 @@ func (n *NotionClient) GetPage(pageId string) (string, error) {
 	return page.Markdown, nil
 }
 
-func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentType ParentLiteral) (string, error) {
+func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentType ParentLiteral, maxRetries, retryInterval int) (string, error) {
 	client := &http.Client{Timeout: time.Duration(60) * time.Second}
 	url := "https://api.notion.com/v1/pages"
 	var parent ParentType
@@ -122,7 +123,7 @@ func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentT
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiKey))
 	req.Header.Add("Content-Type", "application/json")
 
-	res, err := RequestWithRetries(client, req)
+	res, err := RequestWithRetries(client, req, maxRetries, retryInterval)
 	if err != nil {
 		return "", err
 	}
@@ -148,6 +149,49 @@ func (n *NotionClient) PostPage(markdownContent, title, parentId string, parentT
 	return page.ID, nil
 }
 
+func (n *NotionClient) PatchPage(pageId string, content string, maxRetries, retryInterval int) (string, error) {
+	client := &http.Client{Timeout: time.Duration(60) * time.Second}
+	url := fmt.Sprintf("https://api.notion.com/v1/pages/%s/markdown", pageId)
+	reqBodyJson := PatchMarkdown{Type: "insert_content", InsertContent: InsertContent{Content: content}}
+	bodyData, err := json.Marshal(reqBodyJson)
+	if err != nil {
+		return "", err
+	}
+	body := bytes.NewReader(bodyData)
+	req, err := http.NewRequest("PATCH", url, body)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("Notion-Version", n.notionVersion)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", n.apiKey))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := RequestWithRetries(client, req, maxRetries, retryInterval)
+	if err != nil {
+		return "", err
+	}
+	if res.StatusCode > 299 || res.StatusCode < 200 {
+		defer func() { _ = res.Body.Close() }()
+		respBody, err := io.ReadAll(res.Body)
+		if err != nil {
+			return "", err
+		}
+		detail := string(respBody)
+		return "", fmt.Errorf("response returned a status code of %d: %s", res.StatusCode, detail)
+	}
+	defer func() { _ = res.Body.Close() }()
+	respBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+	var page PatchedPage
+	err = json.Unmarshal(respBody, &page)
+	if err != nil {
+		return "", err
+	}
+	return page.ID, nil
+}
+
 type Notion struct {
 	client NotionHttpClient
 }
@@ -158,10 +202,14 @@ func NewNotion(client NotionHttpClient) *Notion {
 	}
 }
 
-func (app *Notion) Read(pageId string) (string, error) {
-	return app.client.GetPage(pageId)
+func (app *Notion) Read(pageId string, maxRetries, retryInterval int) (string, error) {
+	return app.client.GetPage(pageId, maxRetries, retryInterval)
 }
 
-func (app *Notion) Write(content, title, parentId string, parentType ParentLiteral) (string, error) {
-	return app.client.PostPage(content, title, parentId, parentType)
+func (app *Notion) Write(content, title, parentId string, parentType ParentLiteral, maxRetries, retryInterval int) (string, error) {
+	return app.client.PostPage(content, title, parentId, parentType, maxRetries, retryInterval)
+}
+
+func (app *Notion) Append(pageId string, content string, maxRetries, retryInterval int) (string, error) {
+	return app.client.PatchPage(pageId, content, maxRetries, retryInterval)
 }

@@ -11,12 +11,12 @@ import (
 
 const MaxRetries int = 3
 const RetryAfterHeader string = "Retry-After"
-const DefaultRetryTime = 1
+const DefaultRetryTime int = 1
 
 var RetriableErrorCodes [3]int = [3]int{429, 500, 503}
 
-func RequestWithRetries(client *http.Client, request *http.Request) (*http.Response, error) {
-	for range MaxRetries {
+func RequestWithRetries(client *http.Client, request *http.Request, maxRetries, retryInterval int) (*http.Response, error) {
+	for range maxRetries {
 		response, err := client.Do(request)
 		if err != nil {
 			return nil, err
@@ -33,7 +33,7 @@ func RequestWithRetries(client *http.Client, request *http.Request) (*http.Respo
 		default:
 			dt, errDt := time.Parse(time.RFC1123, retryAfter)
 			if errDt != nil {
-				retryAfterTime = time.Duration(1) * time.Second
+				retryAfterTime = time.Duration(retryInterval) * time.Second
 			} else {
 				retryAfterTime = time.Until(dt)
 			}
