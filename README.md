@@ -25,8 +25,6 @@ brew tap AstraBert/notion-cli
 brew install notion-cli
 ```
 
-In this last case, be careful to specify your OS (supported: linux, windows, macos) and your architecture type (supported: amd, arm).
-
 ## Usage
 
 `notion-cli` has two commands: `read` (aliased also to `r`) and `write` (aliased also to `w`).
