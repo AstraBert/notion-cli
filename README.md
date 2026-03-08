@@ -18,7 +18,12 @@ go install github.com/AstraBert/notion-cli@latest
 npm install @cle-does-things/notion-cli@latest
 ```
 
-3. Install with `brew` (**coming soon!**)
+3. Install with `brew` (only for Linux and Mac users):
+
+```bash
+brew tap AstraBert/notion-cli
+brew install notion-cli
+```
 
 In this last case, be careful to specify your OS (supported: linux, windows, macos) and your architecture type (supported: amd, arm).
 
