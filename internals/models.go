@@ -97,3 +97,30 @@ type PatchedPage struct {
 	Truncated       bool     `json:"truncated"`
 	UnknownBlockIDs []string `json:"unknown_block_ids"`
 }
+
+type SearchPagesRequest struct {
+	Query       string       `json:"query"`
+	Sort        SearchSortBy `json:"sort"`
+	Filter      SearchFilter `json:"filter"`
+	PageSize    int          `json:"page_size,omitempty"`
+	StartCursor string       `json:"start_cursor,omitempty"`
+}
+
+type SearchSortBy struct {
+	Timestamp string              `json:"timestamp"`
+	Direction SortStrategyLiteral `json:"direction"`
+}
+
+type SearchFilter struct {
+	Property string `json:"property"`
+	Value    string `json:"value"`
+}
+
+type SearchPagesResponse struct {
+	Type             string         `json:"type"`
+	PageOrDataSource map[string]any `json:"page_or_data_source"`
+	Object           string         `json:"object"`
+	NextCursor       *string        `json:"next_cursor"`
+	HasMore          bool           `json:"has_more"`
+	Results          []PostPage     `json:"results"`
+}

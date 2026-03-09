@@ -115,7 +115,7 @@ notion-cli write -i abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world" -t "My
 
 ### `append` 
 
-**Aliases:** `w`
+**Aliases:** `a`
 
 Appends markdown content to the end of an existing Notion page and prints the ID of the modified page to stdout.
 

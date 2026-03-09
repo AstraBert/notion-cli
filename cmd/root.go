@@ -134,6 +134,51 @@ var appendCmd = &cobra.Command{
 	},
 }
 
+var searchSortStrategy string
+var searchPageSize int
+var searchMaxRetries int
+var searchRetryTime int
+
+var searchCmd = &cobra.Command{
+	Use:     "search",
+	Aliases: []string{"s"},
+	Short:   "Search pages (by title) within your Notion workspace.",
+	Long:    "Search pages (by title) within your Notion workspace, providing a query, and, optionally, parameters like page size and sorting direction. Returns an array of page IDs.",
+	Run: func(cmd *cobra.Command, args []string) {
+		searchQuery := args[0]
+		if searchQuery == "" {
+			fmt.Println("\x1b[1;31mYou must provide a positional argument for `query`")
+			os.Exit(1)
+		}
+		var sortStrategy internals.SortStrategyLiteral
+		switch searchSortStrategy {
+		case string(internals.AscendingSortStrategy):
+			sortStrategy = internals.AscendingSortStrategy
+		case string(internals.DescendingSortStrategy):
+			sortStrategy = internals.DescendingSortStrategy
+		default:
+			fmt.Printf("\x1b[1;31mInvalid argument for `--parent-type`/`-t`: %s. Allowed arguments are: 'page', 'database'\n", parentType)
+			os.Exit(1)
+		}
+		notionClient, err := internals.NewNotionClientFromDefaults()
+		if err != nil {
+			fmt.Printf("\x1b[1;31mAn error occurred while initializing the Notion client: %s\n", err.Error())
+			os.Exit(1)
+		}
+		app := internals.NewNotion(notionClient)
+
+		returnedIds, err := app.Search(searchQuery, "", sortStrategy, searchPageSize, searchMaxRetries, searchRetryTime)
+		if err != nil {
+			fmt.Printf("\x1b[1;31mAn error occurred while appending content to the Notion page: %s\n", err.Error())
+			os.Exit(2)
+		}
+		for _, returnedId := range returnedIds {
+			fmt.Println(returnedId)
+		}
+		os.Exit(0)
+	},
+}
+
 func init() {
 	writeCmd.Flags().StringVarP(&parentType, "parent-type", "p", "page", "Type of parent ('database' or 'page'). Defaults to 'page'.")
 	writeCmd.Flags().StringVarP(&parentId, "parent-id", "i", "", "ID of the parent element. Required.")
@@ -146,6 +191,10 @@ func init() {
 	appendCmd.Flags().StringVarP(&appendContent, "content", "c", "", "Markdown content to append. Required.")
 	appendCmd.Flags().IntVarP(&appendMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
 	appendCmd.Flags().IntVarP(&appendRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
+	searchCmd.Flags().StringVarP(&searchSortStrategy, "sort", "s", "descending", "Order for sorting by last edited. Allowed values: 'ascending', 'descending'. Defaults to 'descending'.")
+	searchCmd.Flags().IntVarP(&searchPageSize, "page-size", "p", -1, "Page size for the search. Defaults to -1 (no size filter).")
+	searchCmd.Flags().IntVarP(&searchMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
+	searchCmd.Flags().IntVarP(&searchRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
 
 	_ = writeCmd.MarkFlagRequired("parent-id")
 	_ = writeCmd.MarkFlagRequired("content")
@@ -154,4 +203,5 @@ func init() {
 	rootCmd.AddCommand(readCmd)
 	rootCmd.AddCommand(writeCmd)
 	rootCmd.AddCommand(appendCmd)
+	rootCmd.AddCommand(searchCmd)
 }

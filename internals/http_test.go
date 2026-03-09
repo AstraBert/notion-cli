@@ -44,6 +44,13 @@ func (c *MockNotionClient) PatchPage(pageId string, content string, maxRetries, 
 	return "patched-long-id", nil
 }
 
+func (c *MockNotionClient) SearchPages(query, startCursor string, sortStrategy SortStrategyLiteral, pageSize, maxRetries, retryInterval int) ([]string, error) {
+	if c.fails {
+		return nil, errors.New("failed to search pages")
+	}
+	return []string{"hello-world", "bye-moon"}, nil
+}
+
 func NewMockNotionClient(fails bool) *MockNotionClient {
 	return &MockNotionClient{
 		fails: fails,
