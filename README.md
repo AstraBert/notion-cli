@@ -1,6 +1,6 @@
 # notion-cli
 
-CLI to quickly create and read Notion pages from the terminal
+CLI to quickly search, create, read and modify Notion pages from the terminal
 
 ## Installation
 

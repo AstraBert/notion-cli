@@ -5,12 +5,12 @@ compatibility: Requires brew, npm or go 1.22+ to be installed. Requires a NOTION
 license: MIT
 metadata:
   author: Clelia Astra Bertelli
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # `notion-cli` Skill
 
-Quickly read, write and modify Notion pages from the terminal.
+Quickly search, read, write and modify Notion pages from the terminal.
 
 ## Initial Setup
 
@@ -27,6 +27,7 @@ If both are set, please provide:
 1. The ID of a page to read
 2. The content (or the prompt to produce the content) of a page to write, and the ID of the parent element (specifying whether the parent element is a database or a page)
 3. The ID of a page to modify, with the content to append (or a prompt to generate the content)
+4. A prompt for me to search pages and perform actions on the pages matching the search query
 
 I will produce the appropriate `notion-cli` command, and once execution is approved, report the results.
 ```
@@ -104,6 +105,16 @@ notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f \
 notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world"
 ```
 
+### `search`: Search pages by title
+
+```bash
+# Using defaults
+notion-cli search "My awesome blog" 
+
+# Specifying sorting order and page size
+notion-cli search "A very popular query" --sort ascending --page-size 100
+```
+
 ### Key Options Reference
 
 **`read`**
@@ -131,6 +142,15 @@ notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world"
 | `--content` | `-c` | Markdown content to append | Yes | — |
 | `--max-retries` | `-m` | Max retries for failed API calls | No | `3` |
 | `--retry-interval` | `-r` | Retry interval in seconds | No | `1` |
+
+**`search`**
+
+| Flag | Alias | Description | Required | Default |
+|------|-------|-------------|----------|---------|
+| `--page-size` | `-p` | Page size for paginated API responses | No | `-1` |
+| `--sort` | `-s` | Order to follow when sorting by last edited. Allowed values: `ascending`, `descending` | No | `descending` |
+| `--max-retries` | `-m` | Maximum number of retries for failed API calls | No | `3` |
+| `--retry-interval` | `-r` | Retry interval (in seconds) for failed API calls | No | `1` |
 
 ---
 
