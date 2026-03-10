@@ -98,3 +98,48 @@ func TestNotionAppendFailureIntegration(t *testing.T) {
 	assert.NotNil(t, err, "Error should be non-null")
 	assert.Contains(t, err.Error(), "response returned a status code of 400:", "Unexpected error message")
 }
+
+func TestNotionSearchSuccessIntegration(t *testing.T) {
+	apiKey, okApi := os.LookupEnv("TEST_NOTION_API_KEY")
+	if !okApi {
+		t.Skip("NOTION_API_KEY not available")
+	}
+	searchQuery, okQuery := os.LookupEnv("NOTION_QUERY")
+	if !okQuery {
+		t.Skip("NOTION_QUERY not available")
+	}
+	pageId, okPage := os.LookupEnv("NOTION_PAGE_ID")
+	if !okPage {
+		t.Skip("NOTION_PAGE_ID not available")
+	}
+	client := NewNotionClient(apiKey, DefaultNotionVersion)
+	app := NewNotion(client)
+	returnedIds, err := app.Search(searchQuery, "", DescendingSortStrategy, -1, 3, 1)
+	assert.Nil(t, err, "Error should be null")
+	assert.GreaterOrEqual(t, len(returnedIds), 1, "There should be at least 1 ID in the returned IDs slice")
+	assert.Contains(t, returnedIds, pageId, "NOTION_PAGE_ID should be contained in the returned IDs slice")
+}
+
+func TestNotionSearchNoResultsIntegration(t *testing.T) {
+	apiKey, okApi := os.LookupEnv("TEST_NOTION_API_KEY")
+	if !okApi {
+		t.Skip("NOTION_API_KEY not available")
+	}
+	client := NewNotionClient(apiKey, DefaultNotionVersion)
+	app := NewNotion(client)
+	returnedIds, err := app.Search("does not exist", "", DescendingSortStrategy, -1, 3, 1)
+	assert.Nil(t, err, "Error should be null")
+	assert.Len(t, returnedIds, 0, "There should not be any elements in the returned list")
+}
+
+func TestNotionSearchFailureIntegration(t *testing.T) {
+	apiKey, okApi := os.LookupEnv("TEST_NOTION_API_KEY")
+	if !okApi {
+		t.Skip("NOTION_API_KEY not available")
+	}
+	client := NewNotionClient(apiKey, DefaultNotionVersion)
+	app := NewNotion(client)
+	_, err := app.Search("does not exist", "invalid-uuid", DescendingSortStrategy, -1, 3, 1)
+	assert.NotNil(t, err, "Error should be non-null")
+	assert.Contains(t, err.Error(), "response returned a status code of 400:", "Unexpected error message")
+}

@@ -157,7 +157,7 @@ var searchCmd = &cobra.Command{
 		case string(internals.DescendingSortStrategy):
 			sortStrategy = internals.DescendingSortStrategy
 		default:
-			fmt.Printf("\x1b[1;31mInvalid argument for `--parent-type`/`-t`: %s. Allowed arguments are: 'page', 'database'\n", parentType)
+			fmt.Printf("\x1b[1;31mInvalid argument for `--sort`/`-s`: %s. Allowed arguments are: 'ascending', 'descending'\n", parentType)
 			os.Exit(1)
 		}
 		notionClient, err := internals.NewNotionClientFromDefaults()
@@ -191,8 +191,8 @@ func init() {
 	appendCmd.Flags().StringVarP(&appendContent, "content", "c", "", "Markdown content to append. Required.")
 	appendCmd.Flags().IntVarP(&appendMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
 	appendCmd.Flags().IntVarP(&appendRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
-	searchCmd.Flags().StringVarP(&searchSortStrategy, "sort", "s", "descending", "Order for sorting by last edited. Allowed values: 'ascending', 'descending'. Defaults to 'descending'.")
-	searchCmd.Flags().IntVarP(&searchPageSize, "page-size", "p", -1, "Page size for the search. Defaults to -1 (no size filter).")
+	searchCmd.Flags().StringVarP(&searchSortStrategy, "sort", "s", "descending", "Order to follow when sorting by last edited. Allowed values: 'ascending', 'descending'. Defaults to 'descending'.")
+	searchCmd.Flags().IntVarP(&searchPageSize, "page-size", "p", -1, "Page size for paginated API responses. Defaults to -1 (unspecified page size)")
 	searchCmd.Flags().IntVarP(&searchMaxRetries, "max-retries", "m", internals.MaxRetries, "Maximum number of retries for failed API calls. Defaults to 3.")
 	searchCmd.Flags().IntVarP(&searchRetryTime, "retry-interval", "r", internals.DefaultRetryTime, "Retry interval (in seconds) for failed API calls. Defaults to 1 second.")
 

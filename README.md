@@ -144,6 +144,38 @@ notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f \
 notion-cli append abb4215a-8f8f-47fb-81e5-353a0aec683f -c "Hello world"
 ```
 
+### `search` 
+
+**Aliases:** `s`
+
+Searches pages across the Notion workspace by title and prints the IDs matching the search query to stdout.
+
+**Arguments**
+
+| Argument | Description | Required |
+|----------|-------------|----------|
+| `query` | The search query | Yes |
+
+**Flags**
+
+| Flag | Alias | Description | Required | Default |
+|------|-------|-------------|----------|---------|
+| `--page-size` | `-p` | Page size for paginated API responses | No | `-1` |
+| `--sort` | `-s` | Order to follow when sorting by last edited. Allowed values: `ascending`, `descending` | No | `descending` |
+| `--max-retries` | `-m` | Maximum number of retries for failed API calls | No | `3` |
+| `--retry-interval` | `-r` | Retry interval (in seconds) for failed API calls | No | `1` |
+
+**Examples**
+
+```bash
+# Using defaults
+notion-cli search "My awesome blog" 
+
+# Specifying sorting order and page size
+notion-cli search "A very popular query" --sort ascending --page-size 100
+```
+
+
 ## Contributing
 
 We welcome contributions! Please read our [Contributing Guide](./CONTRIBUTING.md) to get started.
