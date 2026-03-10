@@ -27,7 +27,7 @@ brew install notion-cli
 
 ## Usage
 
-`notion-cli` has two commands: `read` (aliased also to `r`) and `write` (aliased also to `w`).
+`notion-cli` has three commands: `read` (aliased also to `r`), `write` (aliased also to `w`) and `append` (aliased also to `a`).
 
 In order to use the commands, you need to have `NOTION_API_KEY` available within your environment:
 
@@ -175,6 +175,15 @@ notion-cli search "My awesome blog"
 notion-cli search "A very popular query" --sort ascending --page-size 100
 ```
 
+## Use as an Agent Skill
+
+You can use `notion-cli` as an agent skill, downloading it with the `skills` CLI tool:
+
+```bash
+npx skills add AstraBert/notion-cli
+```
+
+Or copy-pasting the [`SKILL.md`](./skills/notion-cli/SKILL.md) file to your own skills setup.
 
 ## Contributing
 
