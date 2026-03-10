@@ -10,11 +10,12 @@ import (
 var _ NotionHttpClient = (*MockNotionClient)(nil) // satisfies interface
 
 type MockNotionClient struct {
-	fails      bool
-	getCalls   []string
-	postCalls  [][]string
-	patchCalls [][]string
-	retryArgs  []int
+	fails         bool
+	getCalls      []string
+	postCalls     [][]string
+	patchCalls    [][]string
+	retryArgs     []int
+	searchQueries []string
 }
 
 func (c *MockNotionClient) GetPage(pageId string, maxRetries, retryTime int) (string, error) {
@@ -42,6 +43,14 @@ func (c *MockNotionClient) PatchPage(pageId string, content string, maxRetries, 
 		return "", errors.New("failed to patch page")
 	}
 	return "patched-long-id", nil
+}
+
+func (c *MockNotionClient) SearchPages(query, startCursor string, sortStrategy SortStrategyLiteral, pageSize, maxRetries, retryInterval int) ([]string, error) {
+	c.searchQueries = append(c.searchQueries, query)
+	if c.fails {
+		return nil, errors.New("failed to search pages")
+	}
+	return []string{"hello-world", "bye-moon"}, nil
 }
 
 func NewMockNotionClient(fails bool) *MockNotionClient {
@@ -149,4 +158,26 @@ func TestNotionAppendFailure(t *testing.T) {
 	assert.Len(t, client.retryArgs, 2, "retryArgs should have a length of 2")
 	assert.Equal(t, client.retryArgs[0], 3, "maxRetries should be 3")
 	assert.Equal(t, client.retryArgs[1], 1, "retryInterval should be 1")
+}
+
+func TestNotionSearchSuccess(t *testing.T) {
+	client := NewMockNotionClient(false)
+	app := NewNotion(client)
+	result, err := app.Search("hello", "", AscendingSortStrategy, -1, 3, 1)
+	assert.Nil(t, err, "Error should be null")
+	assert.Len(t, result, 2, "Unexpected result length")
+	assert.Contains(t, result, "hello-world", "Unexpected result element")
+	assert.Contains(t, result, "bye-moon", "Unexpected result element")
+	assert.Len(t, client.searchQueries, 1, "searchQueries should have a length of 1")
+	assert.Equal(t, client.searchQueries[0], "hello", "Unexpected call argument")
+}
+
+func TestNotionSearchFailure(t *testing.T) {
+	client := NewMockNotionClient(true)
+	app := NewNotion(client)
+	_, err := app.Search("hello", "", AscendingSortStrategy, -1, 3, 1)
+	assert.NotNil(t, err, "Error should be non-null")
+	assert.Equal(t, err.Error(), "failed to search pages", "Unexpected error message")
+	assert.Len(t, client.searchQueries, 1, "searchQueries should have a length of 1")
+	assert.Equal(t, client.searchQueries[0], "hello", "Unexpected call argument")
 }
